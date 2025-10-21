@@ -33,6 +33,9 @@ fun GameScreen(
     val difficulty by viewModel.difficulty.collectAsStateWithLifecycle(initialValue = Difficulty.EASY)
     val gameMode by viewModel.gameMode.collectAsStateWithLifecycle(initialValue = GameMode.VS_AI)
     val isThinking by viewModel.isThinking.collectAsStateWithLifecycle()
+    
+    // Game over logic
+    val isGameOver = gameState.winner != "" || gameState.draw
 
     Column(
         modifier = Modifier
@@ -84,9 +87,11 @@ fun GameScreen(
         GameBoard(
             board = gameState.board,
             onCellClick = { row, col ->
-                viewModel.makeMove(row, col)
+                if (!isGameOver && !isThinking) {
+                    viewModel.makeMove(row, col)
+                }
             },
-            isEnabled = !isThinking && gameState.winner == "" && !gameState.draw
+            isEnabled = !isThinking && !isGameOver
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -117,8 +122,8 @@ fun GameScreen(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
                         containerColor = if (gameState.winner == "X") 
-                            MaterialTheme.colorScheme.errorContainer 
-                        else MaterialTheme.colorScheme.primaryContainer
+                            MaterialTheme.colorScheme.primaryContainer 
+                        else MaterialTheme.colorScheme.errorContainer
                     )
                 ) {
                     Box(
@@ -127,14 +132,27 @@ fun GameScreen(
                             .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = if (gameState.winner == "X") "You Win!" else "AI Wins!",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = if (gameState.winner == "X") 
-                                MaterialTheme.colorScheme.onErrorContainer 
-                            else MaterialTheme.colorScheme.onPrimaryContainer
-                        )
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = if (gameState.winner == "X") "🎉 You Win!" else "🤖 AI Wins!",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = if (gameState.winner == "X") 
+                                    MaterialTheme.colorScheme.onPrimaryContainer 
+                                else MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = if (gameState.winner == "X") 
+                                    "Your opponent completed a line and lost!" 
+                                else "You completed a line and lost!",
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center,
+                                color = if (gameState.winner == "X") 
+                                    MaterialTheme.colorScheme.onPrimaryContainer 
+                                else MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
                     }
                 }
             }
@@ -149,17 +167,51 @@ fun GameScreen(
                             .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "It's a Draw!",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "🤝 It's a Draw!",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "No one completed a line - the board is full!",
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
+
+        // Game Over Actions
+        if (isGameOver) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Game Over!",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Click 'Reset Game' to start a new game",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         // Reset Button
         Button(

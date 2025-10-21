@@ -47,11 +47,18 @@ class AI {
     }
     
     private fun minimax(board: List<List<String>>, depth: Int, isMaximizing: Boolean, isPlayerX: Boolean, alpha: Int, beta: Int): Int {
-        val winner = GameLogic.checkWinner(board)
+        val loser = GameLogic.checkWinner(board)
         
-        if (winner != Player.NONE) {
+        if (loser != Player.NONE) {
             // In Misere Tic-Tac-Toe, the player who completes a line LOSES
-            return if (isMaximizing) -1000 + depth else 1000 - depth
+            // checkWinner() now returns the LOSER
+            val aiSymbol = if (isPlayerX) "O" else "X"
+            
+            return if (loser.name == aiSymbol) {
+                -1000 + depth // AI loses (AI completed a line)
+            } else {
+                1000 - depth // AI wins (opponent completed a line)
+            }
         }
         
         if (GameLogic.isBoardFull(board)) {

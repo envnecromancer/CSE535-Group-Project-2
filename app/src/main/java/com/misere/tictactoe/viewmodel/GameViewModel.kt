@@ -96,12 +96,13 @@ class GameViewModel @Inject constructor(
     }
     
     private fun checkGameEnd(state: GameState) {
-        val winner = GameLogic.checkWinner(state.board)
-        val isDraw = GameLogic.isBoardFull(state.board) && winner == Player.NONE
+        val loser = GameLogic.checkWinner(state.board)
+        val isDraw = GameLogic.isBoardFull(state.board) && loser == Player.NONE
         
-        if (winner != Player.NONE || isDraw) {
+        if (loser != Player.NONE || isDraw) {
+            val actualWinner = if (loser == Player.X) "O" else if (loser == Player.O) "X" else ""
             val finalState = state.copy(
-                winner = if (winner != Player.NONE) winner.name else "",
+                winner = actualWinner,
                 draw = isDraw
             )
             _gameState.value = finalState

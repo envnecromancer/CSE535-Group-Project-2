@@ -6,41 +6,44 @@ class GameLogic {
     
     companion object {
         fun checkWinner(board: List<List<String>>): Player {
+            // In Misere Tic-Tac-Toe, the player who completes a line LOSES
+            // We need to check if anyone completed a line and return the LOSER
+            
             // Check rows
             for (row in board) {
                 if (row.all { it == "X" } && row.none { it == "" }) {
-                    return Player.X
+                    return Player.X // X completed a line, so X loses
                 }
                 if (row.all { it == "O" } && row.none { it == "" }) {
-                    return Player.O
+                    return Player.O // O completed a line, so O loses
                 }
             }
             
             // Check columns
             for (col in 0..2) {
                 if (board[0][col] == "X" && board[1][col] == "X" && board[2][col] == "X") {
-                    return Player.X
+                    return Player.X // X completed a line, so X loses
                 }
                 if (board[0][col] == "O" && board[1][col] == "O" && board[2][col] == "O") {
-                    return Player.O
+                    return Player.O // O completed a line, so O loses
                 }
             }
             
             // Check diagonals
             if (board[0][0] == "X" && board[1][1] == "X" && board[2][2] == "X") {
-                return Player.X
+                return Player.X // X completed a line, so X loses
             }
             if (board[0][0] == "O" && board[1][1] == "O" && board[2][2] == "O") {
-                return Player.O
+                return Player.O // O completed a line, so O loses
             }
             if (board[0][2] == "X" && board[1][1] == "X" && board[2][0] == "X") {
-                return Player.X
+                return Player.X // X completed a line, so X loses
             }
             if (board[0][2] == "O" && board[1][1] == "O" && board[2][0] == "O") {
-                return Player.O
+                return Player.O // O completed a line, so O loses
             }
             
-            return Player.NONE
+            return Player.NONE // No one completed a line
         }
         
         fun isBoardFull(board: List<List<String>>): Boolean {
