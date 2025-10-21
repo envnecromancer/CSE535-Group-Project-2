@@ -22,7 +22,7 @@ fun PastGamesScreen(
     viewModel: GameViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit
 ) {
-    val gameResults by viewModel.getAllGameResults().collectAsStateWithLifecycle(initialValue = emptyList())
+    val gameResults by viewModel.getAllGameResults().collectAsStateWithLifecycle(initialValue = emptyList<GameResult>())
 
     Column(
         modifier = Modifier

@@ -30,8 +30,8 @@ fun GameScreen(
     onNavigateToPastGames: () -> Unit
 ) {
     val gameState by viewModel.gameState.collectAsStateWithLifecycle()
-    val difficulty by viewModel.difficulty.collectAsStateWithLifecycle()
-    val gameMode by viewModel.gameMode.collectAsStateWithLifecycle()
+    val difficulty by viewModel.difficulty.collectAsStateWithLifecycle(initialValue = Difficulty.EASY)
+    val gameMode by viewModel.gameMode.collectAsStateWithLifecycle(initialValue = GameMode.VS_AI)
     val isThinking by viewModel.isThinking.collectAsStateWithLifecycle()
 
     Column(
@@ -195,11 +195,15 @@ fun GameBoard(
                         .fillMaxWidth()
                 ) {
                     repeat(3) { col ->
-                        GameCell(
-                            symbol = board[row][col],
-                            onClick = { if (isEnabled) onCellClick(row, col) },
-                            isEnabled = isEnabled && board[row][col] == ""
-                        )
+                        Box(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            GameCell(
+                                symbol = board[row][col],
+                                onClick = { if (isEnabled) onCellClick(row, col) },
+                                isEnabled = isEnabled && board[row][col] == ""
+                            )
+                        }
                     }
                 }
             }
@@ -227,8 +231,7 @@ fun GameCell(
 
     Box(
         modifier = Modifier
-            .weight(1f)
-            .fillMaxHeight()
+            .fillMaxSize()
             .padding(2.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(backgroundColor)

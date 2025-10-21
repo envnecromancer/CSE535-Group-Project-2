@@ -21,8 +21,18 @@ fun SettingsScreen(
     viewModel: GameViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit
 ) {
-    val difficulty by viewModel.difficulty.collectAsStateWithLifecycle()
-    val gameMode by viewModel.gameMode.collectAsStateWithLifecycle()
+    val difficulty by viewModel.difficulty.collectAsStateWithLifecycle(initialValue = Difficulty.EASY)
+    val gameMode by viewModel.gameMode.collectAsStateWithLifecycle(initialValue = GameMode.VS_AI)
+    
+    // Local state for temporary settings changes
+    var localDifficulty by remember { mutableStateOf(difficulty) }
+    var localGameMode by remember { mutableStateOf(gameMode) }
+    
+    // Update local state when settings change
+    LaunchedEffect(difficulty, gameMode) {
+        localDifficulty = difficulty
+        localGameMode = gameMode
+    }
 
     Column(
         modifier = Modifier
@@ -35,10 +45,56 @@ fun SettingsScreen(
                 TextButton(onClick = onNavigateBack) {
                     Text("Back")
                 }
+            },
+            actions = {
+                // Save button
+                val hasChanges = localDifficulty != difficulty || localGameMode != gameMode
+                if (hasChanges) {
+                    TextButton(
+                        onClick = {
+                            viewModel.setDifficulty(localDifficulty)
+                            viewModel.setGameMode(localGameMode)
+                        }
+                    ) {
+                        Text("Save")
+                    }
+                }
             }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
+
+        // Unsaved changes indicator
+        val hasChanges = localDifficulty != difficulty || localGameMode != gameMode
+        if (hasChanges) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "⚠️ You have unsaved changes",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    TextButton(
+                        onClick = {
+                            viewModel.setDifficulty(localDifficulty)
+                            viewModel.setGameMode(localGameMode)
+                        }
+                    ) {
+                        Text("Save Now")
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         // Game Mode Selection
         Card(
@@ -62,15 +118,15 @@ fun SettingsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .selectable(
-                                    selected = (gameMode == mode),
-                                    onClick = { viewModel.setGameMode(mode) },
+                                    selected = (localGameMode == mode),
+                                    onClick = { localGameMode = mode },
                                     role = Role.RadioButton
                                 )
                                 .padding(vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             RadioButton(
-                                selected = (gameMode == mode),
+                                selected = (localGameMode == mode),
                                 onClick = null
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -91,7 +147,7 @@ fun SettingsScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Difficulty Selection (only for AI mode)
-        if (gameMode == GameMode.VS_AI) {
+        if (localGameMode == GameMode.VS_AI) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -114,15 +170,15 @@ fun SettingsScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .selectable(
-                                            selected = (difficulty == diff),
-                                            onClick = { viewModel.setDifficulty(diff) },
+                                            selected = (localDifficulty == diff),
+                                            onClick = { localDifficulty = diff },
                                             role = Role.RadioButton
                                         )
                                         .padding(vertical = 8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     RadioButton(
-                                        selected = (difficulty == diff),
+                                        selected = (localDifficulty == diff),
                                         onClick = null
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))

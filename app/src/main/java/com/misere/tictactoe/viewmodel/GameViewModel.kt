@@ -6,6 +6,7 @@ import com.misere.tictactoe.data.*
 import com.misere.tictactoe.game.AI
 import com.misere.tictactoe.game.GameLogic
 import com.misere.tictactoe.repository.GameRepository
+import com.misere.tictactoe.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -14,7 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
-    private val gameRepository: GameRepository
+    private val gameRepository: GameRepository,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
     
     private val ai = AI()
@@ -24,11 +26,12 @@ class GameViewModel @Inject constructor(
     )
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
     
-    private val _difficulty = MutableStateFlow(Difficulty.EASY)
-    val difficulty: StateFlow<Difficulty> = _difficulty.asStateFlow()
+    val difficulty: Flow<Difficulty> = settingsRepository.difficulty
+    val gameMode: Flow<GameMode> = settingsRepository.gameMode
     
-    private val _gameMode = MutableStateFlow(GameMode.VS_AI)
-    val gameMode: StateFlow<GameMode> = _gameMode.asStateFlow()
+    // Helper functions to get current values
+    private fun getCurrentDifficulty(): Difficulty = settingsRepository.getCurrentDifficulty()
+    private fun getCurrentGameMode(): GameMode = settingsRepository.getCurrentGameMode()
     
     private val _isThinking = MutableStateFlow(false)
     val isThinking: StateFlow<Boolean> = _isThinking.asStateFlow()
@@ -60,7 +63,7 @@ class GameViewModel @Inject constructor(
         checkGameEnd(newState)
         
         // If playing against AI and game isn't over, make AI move
-        if (_gameMode.value == GameMode.VS_AI && !isGameOver(newState)) {
+        if (getCurrentGameMode() == GameMode.VS_AI && !isGameOver(newState)) {
             makeAIMove(newState)
         }
     }
@@ -73,7 +76,7 @@ class GameViewModel @Inject constructor(
             delay(1000)
             
             val currentBoard = currentState.board
-            val aiMove = ai.getMove(currentBoard, _difficulty.value, true)
+            val aiMove = ai.getMove(currentBoard, getCurrentDifficulty(), true)
             
             if (aiMove.first != -1 && aiMove.second != -1) {
                 val newBoard = currentBoard.map { it.toMutableList() }.toMutableList()
@@ -113,8 +116,8 @@ class GameViewModel @Inject constructor(
             val gameResult = GameResult(
                 dateTime = System.currentTimeMillis(),
                 winner = if (state.draw) "Draw" else state.winner,
-                difficulty = _difficulty.value.name,
-                gameMode = _gameMode.value.name,
+                difficulty = getCurrentDifficulty().name,
+                gameMode = getCurrentGameMode().name,
                 isDraw = state.draw
             )
             gameRepository.insertGameResult(gameResult)
@@ -131,11 +134,11 @@ class GameViewModel @Inject constructor(
     }
     
     fun setDifficulty(difficulty: Difficulty) {
-        _difficulty.value = difficulty
+        settingsRepository.saveDifficulty(difficulty)
     }
     
     fun setGameMode(gameMode: GameMode) {
-        _gameMode.value = gameMode
+        settingsRepository.saveGameMode(gameMode)
         resetGame()
     }
     

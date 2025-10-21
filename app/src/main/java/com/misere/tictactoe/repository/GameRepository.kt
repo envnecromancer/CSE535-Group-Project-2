@@ -3,6 +3,8 @@ package com.misere.tictactoe.repository
 import com.misere.tictactoe.data.GameResult
 import com.misere.tictactoe.data.GameResultDao
 import com.misere.tictactoe.data.GameResultEntity
+import com.misere.tictactoe.data.toGameResult
+import com.misere.tictactoe.data.toGameResultEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
