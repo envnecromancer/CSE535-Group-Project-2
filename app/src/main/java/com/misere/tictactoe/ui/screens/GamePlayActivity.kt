@@ -29,7 +29,7 @@ fun SimpleGameScreen(
 ) {
     val gameState by viewModel.gameState.observeAsState()
     val difficulty by viewModel.difficulty.observeAsState(Difficulty.EASY)
-    val gameMode by viewModel.gameMode.observeAsState(GameMode.VS_AI)
+    val gameMode by viewModel.gameMode.observeAsState(GameMode.PLAYER_VS_BOT)
     val isThinking by viewModel.isThinking.observeAsState(false)
     
     // Game over logic
@@ -70,14 +70,14 @@ fun SimpleGameScreen(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-                if (gameMode == GameMode.VS_AI) {
+                if (gameMode == GameMode.PLAYER_VS_BOT) {
                     Text(
                         text = "Difficulty: ${difficulty.name}",
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
                 // To show the current turn for human vs human mode
-                if (gameMode == GameMode.VS_HUMAN_ON_DEVICE && !isGameOver) {
+                if (gameMode == GameMode.PLAYER_VS_PLAYER_ON_DEVICE && !isGameOver) {
                     val currentPlayer = if ((gameState?.turn ?: 0) % 2 == 0) "X" else "O"
                     Text(
                         text = "Current Turn: Player $currentPlayer",
@@ -130,22 +130,22 @@ fun SimpleGameScreen(
             }
             gameState?.winner != "" -> {
                 val winnerText = when (gameMode) {
-                    GameMode.VS_AI -> {
+                    GameMode.PLAYER_VS_BOT -> {
                         if (gameState?.winner == "X") "Congratulations, You Win!" else "Oho, AI Wins!"
                     }
-                    GameMode.VS_HUMAN_ON_DEVICE -> {
+                    GameMode.PLAYER_VS_PLAYER_ON_DEVICE -> {
                         "Yeay, Player ${gameState?.winner} Wins!"
                     }
                     else -> "Yeay, Player ${gameState?.winner} Wins!"
                 }
                 
                 val winnerMessage = when (gameMode) {
-                    GameMode.VS_AI -> {
+                    GameMode.PLAYER_VS_BOT -> {
                         if (gameState?.winner == "X") 
                             "Your opponent completed a line!" 
                         else "You completed a line!"
                     }
-                    GameMode.VS_HUMAN_ON_DEVICE -> {
+                    GameMode.PLAYER_VS_PLAYER_ON_DEVICE -> {
                         val loser = if (gameState?.winner == "X") "O" else "X"
                         "Player $loser completed a line and lost!"
                     }

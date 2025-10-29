@@ -24,7 +24,7 @@ fun SimpleSettingsScreen(
     onNavigateBack: () -> Unit
 ) {
     val difficulty by viewModel.difficulty.observeAsState(Difficulty.EASY)
-    val gameMode by viewModel.gameMode.observeAsState(GameMode.VS_AI)
+    val gameMode by viewModel.gameMode.observeAsState(GameMode.PLAYER_VS_BOT)
 
     Column(
         modifier = Modifier
@@ -81,9 +81,9 @@ fun SimpleSettingsScreen(
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = when (mode) {
-                                    GameMode.VS_AI -> "vs AI"
-                                    GameMode.VS_HUMAN_ON_DEVICE -> "vs Human (On-Device Play)"
-                                    GameMode.VS_HUMAN_P2P -> "vs Human (Two-Device Play)"
+                                    GameMode.PLAYER_VS_BOT -> "Player vs AI"
+                                    GameMode.PLAYER_VS_PLAYER_ON_DEVICE -> "Player vs Player (On-Device Play)"
+                                    GameMode.PLAYER_VS_PLAYER_P2P -> "Player vs Player (Two-Device Play)"
                                 },
                                 style = MaterialTheme.typography.bodyLarge
                             )
@@ -96,7 +96,7 @@ fun SimpleSettingsScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Difficulty Selection (only for AI mode)
-        if (gameMode == GameMode.VS_AI) {
+        if (gameMode == GameMode.PLAYER_VS_BOT) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)

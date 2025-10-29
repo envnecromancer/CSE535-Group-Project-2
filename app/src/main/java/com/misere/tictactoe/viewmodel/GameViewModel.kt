@@ -79,8 +79,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         
         // Determine which symbol to place based on game mode and turn
         val symbol = when (_gameMode.value) {
-            GameMode.VS_AI -> "X" // Human always plays X against AI
-            GameMode.VS_HUMAN_ON_DEVICE -> {
+            GameMode.PLAYER_VS_BOT -> "X" // Human always plays X against AI
+            GameMode.PLAYER_VS_PLAYER_ON_DEVICE -> {
                 // Alternating symbols between X and O based on turn number
                 if (currentState.turn % 2 == 0) "X" else "O"
             }
@@ -102,7 +102,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val gameEnded = checkGameEnd(newState)
         
         // If playing against AI and game isn't over, make AI move
-        if (_gameMode.value == GameMode.VS_AI && !gameEnded) {
+        if (_gameMode.value == GameMode.PLAYER_VS_BOT && !gameEnded) {
             makeAIMove(newState)
         }
     }
@@ -167,7 +167,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 dateTime = System.currentTimeMillis(),
                 winner = if (state.draw) "Draw" else state.winner,
                 difficulty = _difficulty.value?.name ?: "EASY",
-                gameMode = _gameMode.value?.name ?: "VS_AI",
+                gameMode = _gameMode.value?.name ?: "PLAYER_VS_BOT",
                 isDraw = state.draw
             )
             gameRepository.insertGameResult(gameResult)

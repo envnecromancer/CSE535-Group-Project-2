@@ -28,11 +28,11 @@ class SimpleSettingsRepository private constructor(context: Context) {
     
     // Get game mode from preferences
     fun getGameMode(): GameMode {
-        val name = prefs.getString(KEY_GAME_MODE, GameMode.VS_AI.name) ?: GameMode.VS_AI.name
+        val name = prefs.getString(KEY_GAME_MODE, GameMode.PLAYER_VS_BOT.name) ?: GameMode.PLAYER_VS_BOT.name
         return try {
             GameMode.valueOf(name)
         } catch (e: IllegalArgumentException) {
-            GameMode.VS_AI
+            GameMode.PLAYER_VS_BOT
         }
     }
     
