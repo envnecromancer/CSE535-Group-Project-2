@@ -3,7 +3,8 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
     id("kotlin-parcelize")
-    id("dagger.hilt.android.plugin")
+    // Removed Hilt for simplified version
+    // id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -73,10 +74,14 @@ dependencies {
     // JSON serialization
     implementation("com.google.code.gson:gson:2.10.1")
     
-    // Hilt dependency injection
-    implementation("com.google.dagger:hilt-android:2.48")
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
-    ksp("com.google.dagger:hilt-compiler:2.48")
+    // Simplified - No Hilt needed
+    // implementation("com.google.dagger:hilt-android:2.48")
+    // implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    // ksp("com.google.dagger:hilt-compiler:2.48")
+    
+    // LiveData and ViewModel for simpler state management
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
+    implementation("androidx.compose.runtime:runtime-livedata:1.5.4")
     
     // WiFi Direct
     implementation("androidx.work:work-runtime-ktx:2.9.0")

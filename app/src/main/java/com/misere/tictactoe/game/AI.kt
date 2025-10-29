@@ -12,7 +12,7 @@ class AI {
         
         return when (difficulty) {
             Difficulty.EASY -> getRandomMove(availableMoves)
-            Difficulty.MEDIUM -> getMediumMove(board, availableMoves, isPlayerX)
+            Difficulty.MEDIUM -> getSemiOptimalMove(board, availableMoves, isPlayerX)
             Difficulty.HARD -> getOptimalMove(board, availableMoves, isPlayerX)
             else -> getRandomMove(availableMoves)
         }
@@ -22,7 +22,7 @@ class AI {
         return availableMoves[Random.nextInt(availableMoves.size)]
     }
     
-    private fun getMediumMove(board: List<List<String>>, availableMoves: List<Pair<Int, Int>>, isPlayerX: Boolean): Pair<Int, Int> {
+    private fun getSemiOptimalMove(board: List<List<String>>, availableMoves: List<Pair<Int, Int>>, isPlayerX: Boolean): Pair<Int, Int> {
         return if (Random.nextBoolean()) {
             getOptimalMove(board, availableMoves, isPlayerX)
         } else {

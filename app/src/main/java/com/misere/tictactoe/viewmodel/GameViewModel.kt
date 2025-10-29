@@ -1,56 +1,95 @@
 package com.misere.tictactoe.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.misere.tictactoe.data.*
 import com.misere.tictactoe.game.AI
 import com.misere.tictactoe.game.GameLogic
-import com.misere.tictactoe.repository.GameRepository
-import com.misere.tictactoe.repository.SettingsRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
+import com.misere.tictactoe.repository.SimpleGameRepository
+import com.misere.tictactoe.repository.SimpleSettingsRepository
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class GameViewModel @Inject constructor(
-    private val gameRepository: GameRepository,
-    private val settingsRepository: SettingsRepository
-) : ViewModel() {
+class GameViewModel(application: Application) : AndroidViewModel(application) {
     
     private val ai = AI()
     
-    private val _gameState = MutableStateFlow(
-        GameState()
-    )
-    val gameState: StateFlow<GameState> = _gameState.asStateFlow()
+    // Singleton repositories - no Hilt needed
+    private val gameRepository = SimpleGameRepository.getInstance(application)
+    private val settingsRepository = SimpleSettingsRepository.getInstance(application)
     
-    val difficulty: Flow<Difficulty> = settingsRepository.difficulty
-    val gameMode: Flow<GameMode> = settingsRepository.gameMode
+    // Game state
+    private val _gameState = MutableLiveData(GameState())
+    val gameState: LiveData<GameState> = _gameState
     
-    // Helper functions to get current values
-    private fun getCurrentDifficulty(): Difficulty = settingsRepository.getCurrentDifficulty()
-    private fun getCurrentGameMode(): GameMode = settingsRepository.getCurrentGameMode()
+    // Settings
+    private val _difficulty = MutableLiveData(getDifficultyFromPrefs())
+    val difficulty: LiveData<Difficulty> = _difficulty
     
-    private val _isThinking = MutableStateFlow(false)
-    val isThinking: StateFlow<Boolean> = _isThinking.asStateFlow()
+    private val _gameMode = MutableLiveData(getGameModeFromPrefs())
+    val gameMode: LiveData<GameMode> = _gameMode
     
-    private val _gameMessage = MutableStateFlow(GameMessage())
-    val gameMessage: StateFlow<GameMessage> = _gameMessage.asStateFlow()
+    // AI thinking state
+    private val _isThinking = MutableLiveData(false)
+    val isThinking: LiveData<Boolean> = _isThinking
     
+    // Game results
+    private val _gameResults = MutableLiveData<List<GameResult>>(emptyList())
+    val gameResults: LiveData<List<GameResult>> = _gameResults
+    
+    init {
+        loadGameResults()
+    }
+    
+    // Get difficulty from repository
+    private fun getDifficultyFromPrefs(): Difficulty {
+        return settingsRepository.getDifficulty()
+    }
+    
+    // Get game mode from repository
+    private fun getGameModeFromPrefs(): GameMode {
+        return settingsRepository.getGameMode()
+    }
+    
+    // Save difficulty
+    fun setDifficulty(difficulty: Difficulty) {
+        _difficulty.value = difficulty
+        settingsRepository.saveDifficulty(difficulty)
+    }
+    
+    // Save game mode
+    fun setGameMode(gameMode: GameMode) {
+        _gameMode.value = gameMode
+        settingsRepository.saveGameMode(gameMode)
+        resetGame()
+    }
+    
+    // Player makes a move
     fun makeMove(row: Int, col: Int) {
-        val currentState = _gameState.value
+        val currentState = _gameState.value ?: return
         val currentBoard = currentState.board
         
-        // Check if cell is empty and it's the player's turn
+        // Check if cell is empty and game is not over
         if (currentBoard[row][col] != "" || currentState.winner != "" || currentState.draw) {
             return
         }
         
-        // Make the move
+        // Determine which symbol to place based on game mode and turn
+        val symbol = when (_gameMode.value) {
+            GameMode.VS_AI -> "X" // Human always plays X against AI
+            GameMode.VS_HUMAN_ON_DEVICE -> {
+                // Alternating symbols between X and O based on turn number
+                if (currentState.turn % 2 == 0) "X" else "O"
+            }
+            else -> "X" // Default to X for other modes
+        }
+        
+        // Making the move
         val newBoard = currentBoard.map { it.toMutableList() }.toMutableList()
-        newBoard[row][col] = "X"
+        newBoard[row][col] = symbol
         
         val newState = currentState.copy(
             board = newBoard,
@@ -59,24 +98,25 @@ class GameViewModel @Inject constructor(
         
         _gameState.value = newState
         
-        // Check for game end
-        checkGameEnd(newState)
+        // Checking for game over and storing result
+        val gameEnded = checkGameEnd(newState)
         
         // If playing against AI and game isn't over, make AI move
-        if (getCurrentGameMode() == GameMode.VS_AI && !isGameOver(newState)) {
+        if (_gameMode.value == GameMode.VS_AI && !gameEnded) {
             makeAIMove(newState)
         }
     }
     
+    // AI makes a move
     private fun makeAIMove(currentState: GameState) {
         viewModelScope.launch {
             _isThinking.value = true
             
-            // Add delay to show "Thinking..." message
+            // Adding delay to show AI thinking
             delay(1000)
             
             val currentBoard = currentState.board
-            val aiMove = ai.getMove(currentBoard, getCurrentDifficulty(), true)
+            val aiMove = ai.getMove(currentBoard, _difficulty.value ?: Difficulty.EASY, true)
             
             if (aiMove.first != -1 && aiMove.second != -1) {
                 val newBoard = currentBoard.map { it.toMutableList() }.toMutableList()
@@ -95,53 +135,71 @@ class GameViewModel @Inject constructor(
         }
     }
     
-    private fun checkGameEnd(state: GameState) {
+    // Check if game ended - returns true if game is over
+    private fun checkGameEnd(state: GameState): Boolean {
         val loser = GameLogic.checkWinner(state.board)
         val isDraw = GameLogic.isBoardFull(state.board) && loser == Player.NONE
         
         if (loser != Player.NONE || isDraw) {
-            val actualWinner = if (loser == Player.X) "O" else if (loser == Player.O) "X" else ""
+            val actualWinner = when (loser) {
+                Player.X -> "O"
+                Player.O -> "X"
+                else -> ""
+            }
+            
             val finalState = state.copy(
                 winner = actualWinner,
                 draw = isDraw
             )
-            _gameState.value = finalState
             
-            // Save game result
+            _gameState.value = finalState
             saveGameResult(finalState)
+            return true
         }
+        return false
     }
     
+    // Save game result to repository
     private fun saveGameResult(state: GameState) {
         viewModelScope.launch {
             val gameResult = GameResult(
+                id = 0,
                 dateTime = System.currentTimeMillis(),
                 winner = if (state.draw) "Draw" else state.winner,
-                difficulty = getCurrentDifficulty().name,
-                gameMode = getCurrentGameMode().name,
+                difficulty = _difficulty.value?.name ?: "EASY",
+                gameMode = _gameMode.value?.name ?: "VS_AI",
                 isDraw = state.draw
             )
             gameRepository.insertGameResult(gameResult)
+            loadGameResults()
         }
     }
     
+    // Load game results from repository
+    private fun loadGameResults() {
+        viewModelScope.launch {
+            val results = gameRepository.getAllGameResults()
+            _gameResults.postValue(results)
+        }
+    }
+    
+    // Delete all game results
+    fun deleteAllGameResults() {
+        viewModelScope.launch {
+            gameRepository.deleteAllGameResults()
+            loadGameResults()
+        }
+    }
+    
+    // Check if game is over
     private fun isGameOver(state: GameState): Boolean {
         return state.winner != "" || state.draw
     }
     
+    // Reset game
     fun resetGame() {
         _gameState.value = GameState()
         _isThinking.value = false
     }
-    
-    fun setDifficulty(difficulty: Difficulty) {
-        settingsRepository.saveDifficulty(difficulty)
-    }
-    
-    fun setGameMode(gameMode: GameMode) {
-        settingsRepository.saveGameMode(gameMode)
-        resetGame()
-    }
-    
-    fun getAllGameResults() = gameRepository.getAllGameResults()
 }
+

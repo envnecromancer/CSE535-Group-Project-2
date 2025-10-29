@@ -7,6 +7,9 @@ import kotlinx.coroutines.flow.Flow
 interface GameResultDao {
     @Query("SELECT * FROM game_results ORDER BY dateTime DESC")
     fun getAllGameResults(): Flow<List<GameResultEntity>>
+    
+    @Query("SELECT * FROM game_results ORDER BY dateTime DESC")
+    fun getAllGameResultsList(): List<GameResultEntity>
 
     @Insert
     suspend fun insertGameResult(gameResult: GameResultEntity)

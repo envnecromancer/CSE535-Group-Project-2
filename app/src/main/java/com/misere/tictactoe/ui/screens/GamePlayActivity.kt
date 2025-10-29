@@ -7,43 +7,40 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.misere.tictactoe.data.Difficulty
 import com.misere.tictactoe.data.GameMode
-import com.misere.tictactoe.data.Player
 import com.misere.tictactoe.viewmodel.GameViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GameScreen(
-    viewModel: GameViewModel = hiltViewModel(),
+fun SimpleGameScreen(
+    viewModel: GameViewModel = viewModel(),
     onNavigateToSettings: () -> Unit,
     onNavigateToPastGames: () -> Unit
 ) {
-    val gameState by viewModel.gameState.collectAsStateWithLifecycle()
-    val difficulty by viewModel.difficulty.collectAsStateWithLifecycle(initialValue = Difficulty.EASY)
-    val gameMode by viewModel.gameMode.collectAsStateWithLifecycle(initialValue = GameMode.VS_AI)
-    val isThinking by viewModel.isThinking.collectAsStateWithLifecycle()
+    val gameState by viewModel.gameState.observeAsState()
+    val difficulty by viewModel.difficulty.observeAsState(Difficulty.EASY)
+    val gameMode by viewModel.gameMode.observeAsState(GameMode.VS_AI)
+    val isThinking by viewModel.isThinking.observeAsState(false)
     
     // Game over logic
-    val isGameOver = gameState.winner != "" || gameState.draw
+    val isGameOver = gameState?.winner != "" || gameState?.draw == true
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Top App Bar
+        // Top App Bar with reduced padding
         TopAppBar(
             title = { Text("Misere Tic-Tac-Toe") },
             actions = {
@@ -53,19 +50,20 @@ fun GameScreen(
                 TextButton(onClick = onNavigateToPastGames) {
                     Text("History")
                 }
-            }
+            },
+            modifier = Modifier.height(60.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Game Mode and Difficulty Display
+        // Game Mode Display
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(0.9f),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.Start
             ) {
                 Text(
                     text = "Mode: ${gameMode.name}",
@@ -78,21 +76,34 @@ fun GameScreen(
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
+                // To show the current turn for human vs human mode
+                if (gameMode == GameMode.VS_HUMAN_ON_DEVICE && !isGameOver) {
+                    val currentPlayer = if ((gameState?.turn ?: 0) % 2 == 0) "X" else "O"
+                    Text(
+                        text = "Current Turn: Player $currentPlayer",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = if (currentPlayer == "X") 
+                            MaterialTheme.colorScheme.primary 
+                        else MaterialTheme.colorScheme.secondary
+                    )
+                }
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // Game Board
-        GameBoard(
-            board = gameState.board,
-            onCellClick = { row, col ->
-                if (!isGameOver && !isThinking) {
-                    viewModel.makeMove(row, col)
-                }
-            },
-            isEnabled = !isThinking && !isGameOver
-        )
+        gameState?.let { state ->
+            GameBoard(
+                board = state.board,
+                onCellClick = { row, col ->
+                    if (!isGameOver && !isThinking) {
+                        viewModel.makeMove(row, col)
+                    }
+                },
+                isEnabled = !isThinking && !isGameOver
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -117,11 +128,34 @@ fun GameScreen(
                     }
                 }
             }
-            gameState.winner != "" -> {
+            gameState?.winner != "" -> {
+                val winnerText = when (gameMode) {
+                    GameMode.VS_AI -> {
+                        if (gameState?.winner == "X") "Congratulations, You Win!" else "Oho, AI Wins!"
+                    }
+                    GameMode.VS_HUMAN_ON_DEVICE -> {
+                        "Yeay, Player ${gameState?.winner} Wins!"
+                    }
+                    else -> "Yeay, Player ${gameState?.winner} Wins!"
+                }
+                
+                val winnerMessage = when (gameMode) {
+                    GameMode.VS_AI -> {
+                        if (gameState?.winner == "X") 
+                            "Your opponent completed a line!" 
+                        else "You completed a line!"
+                    }
+                    GameMode.VS_HUMAN_ON_DEVICE -> {
+                        val loser = if (gameState?.winner == "X") "O" else "X"
+                        "Player $loser completed a line and lost!"
+                    }
+                    else -> "Opponent completed a line!"
+                }
+                
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (gameState.winner == "X") 
+                        containerColor = if (gameState?.winner == "X") 
                             MaterialTheme.colorScheme.primaryContainer 
                         else MaterialTheme.colorScheme.errorContainer
                     )
@@ -134,29 +168,21 @@ fun GameScreen(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = if (gameState.winner == "X") "🎉 You Win!" else "🤖 AI Wins!",
+                                text = winnerText,
                                 style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = if (gameState.winner == "X") 
-                                    MaterialTheme.colorScheme.onPrimaryContainer 
-                                else MaterialTheme.colorScheme.onErrorContainer
+                                fontWeight = FontWeight.Bold
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = if (gameState.winner == "X") 
-                                    "Your opponent completed a line and lost!" 
-                                else "You completed a line and lost!",
+                                text = winnerMessage,
                                 style = MaterialTheme.typography.bodyMedium,
-                                textAlign = TextAlign.Center,
-                                color = if (gameState.winner == "X") 
-                                    MaterialTheme.colorScheme.onPrimaryContainer 
-                                else MaterialTheme.colorScheme.onErrorContainer
+                                textAlign = TextAlign.Center
                             )
                         }
                     }
                 }
             }
-            gameState.draw -> {
+            gameState?.draw == true -> {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -169,15 +195,14 @@ fun GameScreen(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = "🤝 It's a Draw!",
+                                text = "It's a Draw!",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "No one completed a line - the board is full!",
-                                style = MaterialTheme.typography.bodyMedium,
-                                textAlign = TextAlign.Center
+                                text = "No one completed a line!",
+                                style = MaterialTheme.typography.bodyMedium
                             )
                         }
                     }
@@ -186,32 +211,6 @@ fun GameScreen(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-
-        // Game Over Actions
-        if (isGameOver) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Game Over!",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Click 'Reset Game' to start a new game",
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-        }
 
         // Reset Button
         Button(
@@ -274,7 +273,7 @@ fun GameCell(
         symbol == "O" -> MaterialTheme.colorScheme.secondary
         else -> MaterialTheme.colorScheme.surface
     }
-    
+
     val textColor = when {
         symbol == "X" -> MaterialTheme.colorScheme.onPrimary
         symbol == "O" -> MaterialTheme.colorScheme.onSecondary
@@ -297,10 +296,10 @@ fun GameCell(
     ) {
         Text(
             text = symbol,
-            fontSize = 32.sp,
+            style = MaterialTheme.typography.displayMedium,
             fontWeight = FontWeight.Bold,
-            color = textColor,
-            textAlign = TextAlign.Center
+            color = textColor
         )
     }
 }
+
