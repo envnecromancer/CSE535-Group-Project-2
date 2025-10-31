@@ -258,8 +258,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
             val finished = checkGameFinished(next)
             _gameState.value = finished
-            
-            // Use saveGameResult instead of recordResultIfOver to refresh UI
+
+            // saving result from remote play game
             if (finished.winner.isNotEmpty() || finished.draw) {
                 saveGameResult(finished)
             }
