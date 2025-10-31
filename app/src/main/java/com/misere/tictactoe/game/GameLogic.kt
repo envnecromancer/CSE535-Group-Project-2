@@ -6,10 +6,6 @@ class GameLogic {
     
     companion object {
         fun checkWinner(board: List<List<String>>): Player {
-            // In Misere Tic-Tac-Toe, the player who completes a line LOSES
-            // We need to check if anyone completed a line and return the LOSER
-            
-            // Check rows
             for (row in board) {
                 if (row.all { it == "X" } && row.none { it == "" }) {
                     return Player.X // X completed a line, so X loses
@@ -31,21 +27,20 @@ class GameLogic {
             
             // Check diagonals
             if (board[0][0] == "X" && board[1][1] == "X" && board[2][2] == "X") {
-                return Player.X // X completed a line, so X loses
+                return Player.X
             }
             if (board[0][0] == "O" && board[1][1] == "O" && board[2][2] == "O") {
-                return Player.O // O completed a line, so O loses
+                return Player.O
             }
             if (board[0][2] == "X" && board[1][1] == "X" && board[2][0] == "X") {
-                return Player.X // X completed a line, so X loses
+                return Player.X
             }
             if (board[0][2] == "O" && board[1][1] == "O" && board[2][0] == "O") {
-                return Player.O // O completed a line, so O loses
+                return Player.O
             }
             
-            return Player.NONE // No one completed a line
+            return Player.NONE
         }
-        
         fun isBoardFull(board: List<List<String>>): Boolean {
             return board.all { row -> row.all { it != "" } }
         }
@@ -61,7 +56,6 @@ class GameLogic {
             }
             return moves
         }
-        
         fun isGameOver(board: List<List<String>>): Boolean {
             return checkWinner(board) != Player.NONE || isBoardFull(board)
         }

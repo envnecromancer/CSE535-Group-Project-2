@@ -10,10 +10,6 @@ import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
 
-/**
- * Two-emulator transport over host loopback.
- * Host listens on device TCP <port>. Client connects to 10.0.2.2:<port>.
- */
 class LocalSocketPeer(
     private val port: Int,
     private val isHost: Boolean

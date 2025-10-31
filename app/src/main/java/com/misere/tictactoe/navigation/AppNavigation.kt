@@ -23,11 +23,9 @@ fun AppNavigation(
 ) {
     val activity = LocalContext.current as ComponentActivity
 
-    // Shared VMs across all screens
     val gameVm: GameViewModel = viewModel(viewModelStoreOwner = activity)
     val p2pVm: P2PViewModel   = viewModel(viewModelStoreOwner = activity)
 
-    // Wire them together so they can talk
     gameVm.p2pViewModel = p2pVm
     p2pVm.gameViewModelRef = gameVm
 

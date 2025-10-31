@@ -15,10 +15,6 @@ import java.io.PrintWriter
 import java.io.IOException
 import java.util.UUID
 
-/**
- * Classic Bluetooth RFCOMM peer that implements PeerService.
- * Uses a fixed UUID so host and client can find each other.
- */
 class BluetoothPeer(
     private val adapter: BluetoothAdapter
 ) : PeerService {
@@ -43,7 +39,6 @@ class BluetoothPeer(
         scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         scope?.launch {
             try {
-                // Accept loop (one connection)
                 val server = adapter.listenUsingRfcommWithServiceRecord(SERVICE_NAME, SERVICE_UUID)
                 serverSocket = server
                 val incoming = server.accept() // blocking
