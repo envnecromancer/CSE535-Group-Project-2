@@ -128,6 +128,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         _gameState.value = newState
 
+        // Send move to P2P peer if in P2P mode
+        if (_gameMode.value == GameMode.PLAYER_VS_PLAYER_P2P) {
+            p2pViewModel?.send("$row,$col")
+        }
+
         // Checking for game over and storing result
         val gameEnded = checkGameEnd(newState)
 
@@ -236,18 +241,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onRemoteMoveReceived(row: Int, col: Int) {
         viewModelScope.launch(Dispatchers.Main) {
-            makeMove(row, col)
-//            val cur = _gameState.value ?: return@launch
-//            val board = cur.board.map { it.toMutableList() }
-//            if (board[row][col].isNotEmpty()) return@launch
-//
-//            val symbol = if (cur.turn % 2 == 0) "X" else "O"
-//            board[row][col] = symbol
-//            val next = cur.copy(board = board, turn = cur.turn + 1)
-//
-//            val finished = checkGameEnd(next)
-//            _gameState.value = finished
-//            recordResultIfOver(finished)
+//            makeMove(row, col)
+            val cur = _gameState.value ?: return@launch
+            val board = cur.board.map { it.toMutableList() }
+            if (board[row][col].isNotEmpty()) return@launch
+
+            val symbol = if (cur.turn % 2 == 0) "X" else "O"
+            board[row][col] = symbol
+            val next = cur.copy(board = board, turn = cur.turn + 1)
+
+            val finished = checkGameFinished(next)
+            _gameState.value = finished
+            recordResultIfOver(finished)
         }
     }
 
