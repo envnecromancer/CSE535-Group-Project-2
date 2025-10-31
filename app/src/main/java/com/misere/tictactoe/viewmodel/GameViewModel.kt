@@ -1,6 +1,7 @@
 package com.misere.tictactoe.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -130,6 +131,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         // Send move to P2P peer if in P2P mode
         if (_gameMode.value == GameMode.PLAYER_VS_PLAYER_P2P) {
+            Log.d("GameViewModel", "Sending P2P move: $row,$col")
             p2pViewModel?.send("$row,$col")
         }
 
@@ -241,10 +243,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onRemoteMoveReceived(row: Int, col: Int) {
         viewModelScope.launch(Dispatchers.Main) {
-//            makeMove(row, col)
+            Log.d("GameViewModel", "Received remote P2P move: $row,$col")
             val cur = _gameState.value ?: return@launch
             val board = cur.board.map { it.toMutableList() }
-            if (board[row][col].isNotEmpty()) return@launch
+            
+            if (board[row][col].isNotEmpty()) {
+                Log.w("GameViewModel", "Cell already occupied at $row,$col")
+                return@launch
+            }
 
             val symbol = if (cur.turn % 2 == 0) "X" else "O"
             board[row][col] = symbol
@@ -252,7 +258,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
             val finished = checkGameFinished(next)
             _gameState.value = finished
-            recordResultIfOver(finished)
+            
+            // Use saveGameResult instead of recordResultIfOver to refresh UI
+            if (finished.winner.isNotEmpty() || finished.draw) {
+                saveGameResult(finished)
+            }
         }
     }
 
