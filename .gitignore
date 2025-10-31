@@ -194,3 +194,7 @@ Thumbs.db
 *.bak
 *.swp
 *~.nib
+
+.specstory
+.vscode
+.idea/
