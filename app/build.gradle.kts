@@ -1,20 +1,20 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.google.devtools.ksp")
-    id("kotlin-parcelize")
-    // Removed Hilt for simplified version
-    // id("dagger.hilt.android.plugin")
+    id("org.jetbrains.kotlin.plugin.serialization")
+    id("org.jetbrains.kotlin.plugin.parcelize")
+    id("org.jetbrains.kotlin.kapt")
 }
 
 android {
     namespace = "com.misere.tictactoe"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.misere.tictactoe"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
+
         versionCode = 1
         versionName = "1.0"
 
@@ -24,7 +24,34 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        // Compose compiler that matches Kotlin 1.9.25
+        kotlinCompilerExtensionVersion = "1.5.15"
+    }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+
     buildTypes {
+        debug {
+            isDebuggable = true
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -33,64 +60,59 @@ android {
             )
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-    buildFeatures {
-        compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
-    implementation("androidx.activity:activity-compose:1.8.2")
-    implementation(platform("androidx.compose:compose-bom:2023.10.01"))
+    implementation("androidx.compose.runtime:runtime-livedata:1.9.4")
+    // ----- Compose BOM (keeps UI libs in sync) -----
+    val composeBom = platform("androidx.compose:compose-bom:2024.10.00")
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+
+    // Core platform + lifecycle
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.4")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
+
+    // Compose UI / Material / Navigation / Activity Compose
+    implementation("androidx.activity:activity-compose:1.9.2")
     implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.material3:material3")
-    implementation("androidx.navigation:navigation-compose:2.7.5")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-    
-    // Room database
+    implementation("androidx.compose.material:material-icons-core")
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.navigation:navigation-compose:2.8.0")
+    //implementation("androidx.navigation:navigation-compose:2.8.0")
+
+
+    // Kotlinx serialization for P2P message JSON
+    //implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
+    // Room database (for PastGames history)
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
-    
-    // JSON serialization
-    implementation("com.google.code.gson:gson:2.10.1")
-    
-    // Simplified - No Hilt needed
-    // implementation("com.google.dagger:hilt-android:2.48")
-    // implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
-    // ksp("com.google.dagger:hilt-compiler:2.48")
-    
-    // LiveData and ViewModel for simpler state management
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
-    implementation("androidx.compose.runtime:runtime-livedata:1.5.4")
-    
-    // WiFi Direct
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
-    
+    kapt("androidx.room:room-compiler:2.6.1")
+
+    // Coroutines for ViewModels / P2PViewModel
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+
+    // Test deps
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2023.10.01"))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
+configurations.all {
+    resolutionStrategy {
+        force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    }
+}
+

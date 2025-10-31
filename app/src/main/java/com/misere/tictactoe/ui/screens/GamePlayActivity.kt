@@ -22,25 +22,23 @@ import com.misere.tictactoe.viewmodel.GameViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SimpleGameScreen(
+fun GamePlayActivity(
     viewModel: GameViewModel = viewModel(),
     onNavigateToSettings: () -> Unit,
     onNavigateToPastGames: () -> Unit
 ) {
     val gameState by viewModel.gameState.observeAsState()
-    val difficulty by viewModel.difficulty.observeAsState(Difficulty.EASY)
     val gameMode by viewModel.gameMode.observeAsState(GameMode.PLAYER_VS_BOT)
+    val difficulty by viewModel.difficulty.observeAsState(Difficulty.EASY)
     val isThinking by viewModel.isThinking.observeAsState(false)
-    
-    // Game over logic
+
     val isGameOver = gameState?.winner != "" || gameState?.draw == true
 
     Column(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Top App Bar with reduced padding
+        // --- Top Bar ---
         TopAppBar(
             title = { Text("Misere Tic-Tac-Toe") },
             actions = {
@@ -56,7 +54,7 @@ fun SimpleGameScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Game Mode Display
+        // --- Mode Card ---
         Card(
             modifier = Modifier.fillMaxWidth(0.9f),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
@@ -77,13 +75,13 @@ fun SimpleGameScreen(
                     )
                 }
                 // To show the current turn for human vs human mode
-                if (gameMode == GameMode.PLAYER_VS_PLAYER_ON_DEVICE && !isGameOver) {
-                    val currentPlayer = if ((gameState?.turn ?: 0) % 2 == 0) "X" else "O"
+                if ((gameMode == GameMode.PLAYER_VS_PLAYER_ON_DEVICE || gameMode == GameMode.PLAYER_VS_PLAYER_P2P) && !isGameOver) {
+                    val currentPlayer = if ((gameState?.turn ?: 0) % 2 == 0) "1" else "2"
                     Text(
                         text = "Current Turn: Player $currentPlayer",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = if (currentPlayer == "X") 
-                            MaterialTheme.colorScheme.primary 
+                        color = if (currentPlayer == "1")
+                            MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.secondary
                     )
                 }
@@ -92,13 +90,13 @@ fun SimpleGameScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Game Board
+        // --- Game Board ---
         gameState?.let { state ->
             GameBoard(
                 board = state.board,
-                onCellClick = { row, col ->
+                onCellClick = { r, c ->
                     if (!isGameOver && !isThinking) {
-                        viewModel.makeMove(row, col)
+                        viewModel.makeMove(r, c)
                     }
                 },
                 isEnabled = !isThinking && !isGameOver
@@ -107,7 +105,7 @@ fun SimpleGameScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Game Status
+        // --- AI Thinking / Winner Info ---
         when {
             isThinking -> {
                 Card(
@@ -133,30 +131,32 @@ fun SimpleGameScreen(
                     GameMode.PLAYER_VS_BOT -> {
                         if (gameState?.winner == "X") "Congratulations, You Win!" else "Oho, AI Wins!"
                     }
-                    GameMode.PLAYER_VS_PLAYER_ON_DEVICE -> {
-                        "Yeay, Player ${gameState?.winner} Wins!"
+                    else -> {
+                        if (gameState?.winner == "X") {
+                            "Congratulations, Player 1 Wins!"
+                        } else{
+                            "Congratulations, Player 2 Wins!"
+                        }
                     }
-                    else -> "Yeay, Player ${gameState?.winner} Wins!"
                 }
-                
+
                 val winnerMessage = when (gameMode) {
                     GameMode.PLAYER_VS_BOT -> {
-                        if (gameState?.winner == "X") 
-                            "Your opponent completed a line!" 
+                        if (gameState?.winner == "X")
+                            "Your opponent completed a line!"
                         else "You completed a line!"
                     }
-                    GameMode.PLAYER_VS_PLAYER_ON_DEVICE -> {
-                        val loser = if (gameState?.winner == "X") "O" else "X"
+                    else -> {
+                        val loser = if (gameState?.winner == "X") "2" else "1"
                         "Player $loser completed a line and lost!"
                     }
-                    else -> "Opponent completed a line!"
                 }
-                
+
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (gameState?.winner == "X") 
-                            MaterialTheme.colorScheme.primaryContainer 
+                        containerColor = if (gameState?.winner == "X")
+                            MaterialTheme.colorScheme.primaryContainer
                         else MaterialTheme.colorScheme.errorContainer
                     )
                 ) {
@@ -215,7 +215,7 @@ fun SimpleGameScreen(
         // Reset Button
         Button(
             onClick = { viewModel.resetGame() },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(0.6f)
         ) {
             Text("Reset Game", fontSize = 18.sp)
         }
@@ -263,20 +263,15 @@ fun GameBoard(
 }
 
 @Composable
-fun GameCell(
-    symbol: String,
-    onClick: () -> Unit,
-    isEnabled: Boolean
-) {
-    val backgroundColor = when {
-        symbol == "X" -> MaterialTheme.colorScheme.primary
-        symbol == "O" -> MaterialTheme.colorScheme.secondary
+fun GameCell(symbol: String, onClick: () -> Unit, isEnabled: Boolean) {
+    val bg = when (symbol) {
+        "X" -> MaterialTheme.colorScheme.primary
+        "O" -> MaterialTheme.colorScheme.secondary
         else -> MaterialTheme.colorScheme.surface
     }
-
-    val textColor = when {
-        symbol == "X" -> MaterialTheme.colorScheme.onPrimary
-        symbol == "O" -> MaterialTheme.colorScheme.onSecondary
+    val color = when (symbol) {
+        "X" -> MaterialTheme.colorScheme.onPrimary
+        "O" -> MaterialTheme.colorScheme.onSecondary
         else -> MaterialTheme.colorScheme.onSurface
     }
 
@@ -285,21 +280,11 @@ fun GameCell(
             .fillMaxSize()
             .padding(2.dp)
             .clip(RoundedCornerShape(8.dp))
-            .background(backgroundColor)
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
-                shape = RoundedCornerShape(8.dp)
-            )
+            .background(bg)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
             .clickable(enabled = isEnabled) { onClick() },
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = symbol,
-            style = MaterialTheme.typography.displayMedium,
-            fontWeight = FontWeight.Bold,
-            color = textColor
-        )
+        Text(symbol, style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold, color = color)
     }
 }
-

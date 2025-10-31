@@ -14,7 +14,6 @@ class AI {
             Difficulty.EASY -> getRandomMove(availableMoves)
             Difficulty.MEDIUM -> getSemiOptimalMove(board, availableMoves, isPlayerX)
             Difficulty.HARD -> getOptimalMove(board, availableMoves, isPlayerX)
-            else -> getRandomMove(availableMoves)
         }
     }
     
@@ -55,9 +54,9 @@ class AI {
             val aiSymbol = if (isPlayerX) "O" else "X"
             
             return if (loser.name == aiSymbol) {
-                -1000 + depth // AI loses (AI completed a line)
+                -1000 + depth // BOT loses as it completed a line
             } else {
-                1000 - depth // AI wins (opponent completed a line)
+                1000 - depth // BOT wins as opponent completed a line
             }
         }
         

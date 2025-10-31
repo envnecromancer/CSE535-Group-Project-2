@@ -5,6 +5,7 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -13,5 +14,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MisereTicTacToe"
+rootProject.name = "CSE535-Group-Project-2"
+
+// This must match your module folder name
 include(":app")

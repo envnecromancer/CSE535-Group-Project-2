@@ -3,7 +3,9 @@ package com.misere.tictactoe.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
@@ -13,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.misere.tictactoe.data.GameResult
 import com.misere.tictactoe.viewmodel.GameViewModel
 import java.text.SimpleDateFormat
@@ -21,10 +22,11 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SimplePastGamesScreen(
+fun PastGamesActivity(
     viewModel: GameViewModel = viewModel(),
     onNavigateBack: () -> Unit
-) {
+)
+ {
     val gameResults by viewModel.gameResults.observeAsState(emptyList())
     var showDeleteDialog by remember { mutableStateOf(false) }
 
@@ -37,7 +39,7 @@ fun SimplePastGamesScreen(
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back"
                     )
                 }
