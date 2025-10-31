@@ -5,18 +5,21 @@ import com.misere.tictactoe.data.Player
 import kotlin.random.Random
 
 class AI {
-    
+
+    //This function gets the move for the AI
     fun getMove(board: List<List<String>>, difficulty: Difficulty, isPlayerX: Boolean): Pair<Int, Int> {
         val availableMoves = GameLogic.getAvailableMoves(board)
         if (availableMoves.isEmpty()) return Pair(-1, -1)
-        
+
+        // chooses difficulty
         return when (difficulty) {
             Difficulty.EASY -> getRandomMove(availableMoves)
             Difficulty.MEDIUM -> getSemiOptimalMove(board, availableMoves, isPlayerX)
             Difficulty.HARD -> getOptimalMove(board, availableMoves, isPlayerX)
         }
     }
-    
+
+    // This function gets random moves
     private fun getRandomMove(availableMoves: List<Pair<Int, Int>>): Pair<Int, Int> {
         return availableMoves[Random.nextInt(availableMoves.size)]
     }
@@ -47,7 +50,8 @@ class AI {
     
     private fun minimax(board: List<List<String>>, depth: Int, isMaximizing: Boolean, isPlayerX: Boolean, alpha: Int, beta: Int): Int {
         val loser = GameLogic.checkWinner(board)
-        
+
+
         if (loser != Player.NONE) {
             // In Misere Tic-Tac-Toe, the player who completes a line LOSES
             // checkWinner() now returns the LOSER
@@ -73,6 +77,7 @@ class AI {
             
             for (move in availableMoves) {
                 val newBoard = makeMove(board, move, if (isPlayerX) "O" else "X")
+                // add 1 to depth for each recursive call
                 val eval = minimax(newBoard, depth + 1, false, isPlayerX, newAlpha, beta)
                 maxEval = maxOf(maxEval, eval)
                 newAlpha = maxOf(newAlpha, eval)
@@ -81,11 +86,13 @@ class AI {
             }
             return maxEval
         } else {
+            // set beta to Int.MAX_VALUE
             var minEval = Int.MAX_VALUE
             var newBeta = beta
             
             for (move in availableMoves) {
                 val newBoard = makeMove(board, move, if (isPlayerX) "X" else "O")
+                // add 1 to depth
                 val eval = minimax(newBoard, depth + 1, true, isPlayerX, alpha, newBeta)
                 minEval = minOf(minEval, eval)
                 newBeta = minOf(newBeta, eval)

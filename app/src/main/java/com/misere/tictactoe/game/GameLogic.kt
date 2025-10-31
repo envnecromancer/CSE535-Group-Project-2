@@ -6,10 +6,7 @@ class GameLogic {
     
     companion object {
         fun checkWinner(board: List<List<String>>): Player {
-            // In Misere Tic-Tac-Toe, the player who completes a line LOSES
-            // We need to check if anyone completed a line and return the LOSER
-            
-            // Check rows
+
             for (row in board) {
                 if (row.all { it == "X" } && row.none { it == "" }) {
                     return Player.X // X completed a line, so X loses
@@ -45,11 +42,13 @@ class GameLogic {
             
             return Player.NONE // No one completed a line
         }
-        
+
+        // This function checks if the board is full
         fun isBoardFull(board: List<List<String>>): Boolean {
             return board.all { row -> row.all { it != "" } }
         }
-        
+
+        // This function checks all available moves left
         fun getAvailableMoves(board: List<List<String>>): List<Pair<Int, Int>> {
             val moves = mutableListOf<Pair<Int, Int>>()
             for (i in 0..2) {
