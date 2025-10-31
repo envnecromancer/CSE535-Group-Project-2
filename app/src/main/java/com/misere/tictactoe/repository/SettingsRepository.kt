@@ -6,7 +6,7 @@ import com.misere.tictactoe.data.Difficulty
 import com.misere.tictactoe.data.GameMode
 
 // Simple Singleton Repository - No Hilt
-class SimpleSettingsRepository private constructor(context: Context) {
+class SettingsRepository private constructor(context: Context) {
     
     private val prefs: SharedPreferences = 
         context.getSharedPreferences("game_settings", Context.MODE_PRIVATE)
@@ -28,11 +28,11 @@ class SimpleSettingsRepository private constructor(context: Context) {
     
     // Get game mode from preferences
     fun getGameMode(): GameMode {
-        val name = prefs.getString(KEY_GAME_MODE, GameMode.VS_AI.name) ?: GameMode.VS_AI.name
+        val name = prefs.getString(KEY_GAME_MODE, GameMode.PLAYER_VS_BOT.name) ?: GameMode.PLAYER_VS_BOT.name
         return try {
             GameMode.valueOf(name)
         } catch (e: IllegalArgumentException) {
-            GameMode.VS_AI
+            GameMode.PLAYER_VS_BOT
         }
     }
     
@@ -46,11 +46,11 @@ class SimpleSettingsRepository private constructor(context: Context) {
         private const val KEY_GAME_MODE = "game_mode"
         
         @Volatile
-        private var INSTANCE: SimpleSettingsRepository? = null
+        private var INSTANCE: SettingsRepository? = null
         
-        fun getInstance(context: Context): SimpleSettingsRepository {
+        fun getInstance(context: Context): SettingsRepository {
             return INSTANCE ?: synchronized(this) {
-                val instance = SimpleSettingsRepository(context.applicationContext)
+                val instance = SettingsRepository(context.applicationContext)
                 INSTANCE = instance
                 instance
             }

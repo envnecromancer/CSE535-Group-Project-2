@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import com.misere.tictactoe.navigation.SimpleAppNavigation
 import com.misere.tictactoe.ui.theme.MisereTicTacToeTheme
 
 class MainActivity : ComponentActivity() {
@@ -17,13 +16,16 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MisereTicTacToeTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    SimpleAppNavigation(
-                        modifier = Modifier.padding(innerPadding)
+                Scaffold(
+                    modifier = Modifier.fillMaxSize()
+                ) { paddingValues ->
+                    AppNavigation(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
                     )
                 }
             }
         }
     }
 }
-

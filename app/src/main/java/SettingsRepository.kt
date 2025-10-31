@@ -33,11 +33,11 @@
 //    }
 //
 //    private fun getStoredGameMode(): GameMode {
-//        val gameModeName = prefs.getString(KEY_GAME_MODE, GameMode.VS_AI.name) ?: GameMode.VS_AI.name
+//        val gameModeName = prefs.getString(KEY_GAME_MODE, GameMode.PLAYER_VS_BOT.name) ?: GameMode.PLAYER_VS_BOT.name
 //        return try {
 //            GameMode.valueOf(gameModeName)
 //        } catch (e: IllegalArgumentException) {
-//            GameMode.VS_AI
+//            GameMode.PLAYER_VS_BOT
 //        }
 //    }
 //

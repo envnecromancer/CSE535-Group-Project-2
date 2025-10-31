@@ -42,11 +42,11 @@ data class GameMessage(
 ) : Parcelable
 
 enum class Difficulty {
-    EASY, MEDIUM, HARD, VS_HUMAN
+    EASY, MEDIUM, HARD
 }
 
 enum class GameMode {
-    VS_AI, VS_HUMAN_ON_DEVICE, VS_HUMAN_P2P
+    PLAYER_VS_BOT, PLAYER_VS_PLAYER_ON_DEVICE, PLAYER_VS_PLAYER_P2P
 }
 
 enum class Player {
