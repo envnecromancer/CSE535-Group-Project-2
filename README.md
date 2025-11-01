@@ -11,14 +11,14 @@ The app supports both AI vs Human and Human vs Human (peer-to-peer) gameplay mod
 - Develop a Misere Tic-Tac-Toe mobile app for Android.
 - Implement the Minimax algorithm with Alpha-Beta Pruning for AI gameplay.
 - Provide three difficulty levels: Easy, Medium, and Hard.
-- Support peer-to-peer (P2P) play via Wi-Fi Direct or Bluetooth.
+- Support peer-to-peer (P2P) play via Bluetooth.
 - Store completed games persistently with results and difficulty level.
 - Build a modern UI using Jetpack Compose.
 
 ### Game Features
 
 #### 1. AI Gameplay
-- The player (X) always starts, AI (O) responds.
+- The player (X) always starts, AI or Bot (O) responds.
 - Difficulty modes:
   - Easy: AI plays random moves.
   - Medium: AI mixes random and optimal moves.
@@ -27,9 +27,9 @@ The app supports both AI vs Human and Human vs Human (peer-to-peer) gameplay mod
 
 #### 2. Human vs Human
 - On-Device: Two players alternate turns on a single device.
-- Two-Device (P2P): Players connect via Wi-Fi Direct or Bluetooth.
+- Two-Device (P2P): Players connect via Bluetooth.
 - Moves, resets, and results sync across devices using JSON data.
-- Includes a “Who Goes First?” prompt (ME / OPPONENT).
+- Includes a “Host/Join" option (ME / OPPONENT), whoever hosts start the game.
 
 #### 3. Persistent Game History
 - Each finished game is saved with:
@@ -59,7 +59,7 @@ The app supports both AI vs Human and Human vs Human (peer-to-peer) gameplay mod
 
 ### Run the App
 1. Click Run ▶ in Android Studio.  
-2. Choose a connected Android device or emulator.  
+2. Choose a connected Android device or two(for P2P).  
 3. The Game Screen will load as the start screen.
 
 ### How to Play (vs AI)
@@ -80,9 +80,9 @@ The app supports both AI vs Human and Human vs Human (peer-to-peer) gameplay mod
 
 #### Between Two Devices (Peer-to-Peer)
 1. Select Settings → Play vs Human (Peer-to-Peer).  
-2. Enable Wi-Fi Direct or Bluetooth on both devices.  
+2. Enable Bluetooth on both devices.  
 3. One player hosts; the other connects from available devices.  
-4. Choose Who Goes First (ME or OPPONENT).  
+4. Choose Who Goes First (Host or Client) by choosing Host and the client chooses join.  
 5. Moves are mirrored in real time across both devices.  
 6. When one device resets or finishes the game, both update automatically.
 
@@ -98,6 +98,6 @@ The app supports both AI vs Human and Human vs Human (peer-to-peer) gameplay mod
 - Language: Kotlin  
 - Framework: Jetpack Compose  
 - Algorithm: Minimax + Alpha-Beta Pruning  
-- Networking: Wi-Fi Direct / Bluetooth APIs  
+- Networking: Bluetooth APIs  
 - Storage: Room Database / SharedPreferences  
 - IDE: Android Studio
