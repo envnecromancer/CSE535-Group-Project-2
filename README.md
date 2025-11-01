@@ -2,8 +2,7 @@
 
 ## Project Description
 
-This project implements Misere Tic-Tac-Toe — a variant of Tic-Tac-Toe — as an Android mobile app using Kotlin and Jetpack Compose.
-
+This project implements Misere Tic-Tac-Toe that is a variant of Tic-Tac-Toe as an Android mobile app using Kotlin and Jetpack Compose.
 In Misere Tic-Tac-Toe, the player who completes a line of three (row, column, or diagonal) loses.  
 The app supports both AI vs Human and Human vs Human (peer-to-peer) gameplay modes.
 
@@ -97,14 +96,14 @@ The app supports both AI vs Human and Human vs Human (peer-to-peer) gameplay mod
 
 ### Folder Structure
 app/
-── src/main/java/com/misere/tictactoe/
-── data/ – Room entities and DAOs
-── p2p/ – Bluetooth peer-to-peer communication layer
-── repository/ – Repositories for game logic and settings
-── ui/screens/ – Compose screens for gameplay, settings, past games, and P2P setup
-── viewmodel/ – GameViewModel and P2PViewModel
-── AppNavigation.kt – NavHost for screen navigation
-── MainActivity.kt – Entry point for the app
+─ src/main/java/com/misere/tictactoe/
+─ data/ – Room entities and DAOs
+─ p2p/ – Bluetooth peer-to-peer communication layer
+─ repository/ – Repositories for game logic and settings
+─ ui/screens/ – Compose screens for gameplay, settings, past games, and P2P setup
+─ viewmodel/ – GameViewModel and P2PViewModel
+─ AppNavigation.kt – NavHost for screen navigation
+─ MainActivity.kt – Entry point for the app
 
 ### Technology Stack
 - Language: Kotlin  
