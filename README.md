@@ -97,22 +97,23 @@ The app supports both AI vs Human and Human vs Human (peer-to-peer) gameplay mod
 
 ### Folder Structure
 app/
-└── src/main/java/com/misere/tictactoe/
-├── data/ – Room entities and DAOs
-├── p2p/ – Bluetooth peer-to-peer communication layer
-├── repository/ – Repositories for game logic and settings
-├── ui/screens/ – Compose screens for gameplay, settings, past games, and P2P setup
-├── viewmodel/ – GameViewModel and P2PViewModel
-├── AppNavigation.kt – NavHost for screen navigation
-└── MainActivity.kt – Entry point for the app
+── src/main/java/com/misere/tictactoe/
+── data/ – Room entities and DAOs
+── p2p/ – Bluetooth peer-to-peer communication layer
+── repository/ – Repositories for game logic and settings
+── ui/screens/ – Compose screens for gameplay, settings, past games, and P2P setup
+── viewmodel/ – GameViewModel and P2PViewModel
+── AppNavigation.kt – NavHost for screen navigation
+── MainActivity.kt – Entry point for the app
 
 ### Technology Stack
 - Language: Kotlin  
 - Framework: Jetpack Compose  
 - Algorithm: Minimax + Alpha-Beta Pruning  
 - Networking: Bluetooth APIs  
+- Storage: Room Database / SharedPreferences  
+- IDE: Android Studio
+
 
 ### License
 This project is intended for academic use as part of coursework for CSE 535 – Mobile Computing at Arizona State University.
-- Storage: Room Database / SharedPreferences  
-- IDE: Android Studio
