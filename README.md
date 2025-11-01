@@ -27,9 +27,10 @@ The app supports both AI vs Human and Human vs Human (peer-to-peer) gameplay mod
 
 #### 2. Human vs Human
 - On-Device: Two players alternate turns on a single device.
-- Two-Device (P2P): Players connect via Bluetooth.
+- Two-Device (P2P): Players connect via Bluetooth and we pair them
 - Moves, resets, and results sync across devices using JSON data.
-- Includes a “Host/Join" option (ME / OPPONENT), whoever hosts start the game.
+- Includes a “Host/Join" option, whoever hosts starts the game.
+- Bluetooth Multiplayer (Two Devices)
 
 #### 3. Persistent Game History
 - Each finished game is saved with:
@@ -43,7 +44,6 @@ The app supports both AI vs Human and Human vs Human (peer-to-peer) gameplay mod
 - Settings Screen: Adjust difficulty or enable vs Human mode.
 - Past Games Screen: View history of completed matches.
 
----
 
 ## Usage Instructions
 
@@ -80,10 +80,10 @@ The app supports both AI vs Human and Human vs Human (peer-to-peer) gameplay mod
 
 #### Between Two Devices (Peer-to-Peer)
 1. Select Settings → Play vs Human (Peer-to-Peer).  
-2. Enable Bluetooth on both devices.  
-3. One player hosts; the other connects from available devices.  
-4. Choose Who Goes First (Host or Client) by choosing Host and the client chooses join.  
-5. Moves are mirrored in real time across both devices.  
+2. Pair both phones in Android Settings → Bluetooth → Pair new device.
+3. On Phone A, open P2P Setup and tap "Host (Phone A)".
+4. On Phone B, open P2P Setup and tap "Join (Select Paired Host)", then choose Phone A from the list.  
+5. Once both devices show "Connected", tap "Continue to Game" on both phones.Moves are mirrored in real time across both devices.  
 6. When one device resets or finishes the game, both update automatically.
 
 ### View Game History
@@ -94,10 +94,25 @@ The app supports both AI vs Human and Human vs Human (peer-to-peer) gameplay mod
    - Difficulty used  
 3. Game history remains available after app restarts.
 
+
+### Folder Structure
+app/
+└── src/main/java/com/misere/tictactoe/
+├── data/ – Room entities and DAOs
+├── p2p/ – Bluetooth peer-to-peer communication layer
+├── repository/ – Repositories for game logic and settings
+├── ui/screens/ – Compose screens for gameplay, settings, past games, and P2P setup
+├── viewmodel/ – GameViewModel and P2PViewModel
+├── AppNavigation.kt – NavHost for screen navigation
+└── MainActivity.kt – Entry point for the app
+
 ### Technology Stack
 - Language: Kotlin  
 - Framework: Jetpack Compose  
 - Algorithm: Minimax + Alpha-Beta Pruning  
 - Networking: Bluetooth APIs  
+
+### License
+This project is intended for academic use as part of coursework for CSE 535 – Mobile Computing at Arizona State University.
 - Storage: Room Database / SharedPreferences  
 - IDE: Android Studio
